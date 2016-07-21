@@ -4,7 +4,31 @@ This information was obtained by inspecting the playbyplay data of the following
 * http://stats.nba.com/stats/playbyplayv2?EndPeriod=10&EndRange=55800&GameID=0041500314&RangeType=2&Season=2015-16&SeasonType=Playoffs&StartPeriod=1&StartRange=0
 
 It is probably somewhat inaccurate and certainly incomplete, but it helps with having some notion of what the fields mean.
-  
+
+EVENTMSGTYPE
+
+1: Made shots
+
+2: Miss shots
+
+3: Free Throws
+
+4: Rebounds
+
+5: Turnovers
+
+6: Fouls
+
+8: Subs
+
+9: Timeouts
+
+10: Jump Ball
+
+12: Start of quarter
+
+13: End of quarter  
+
 EVENTMSGACTIONTYPE:
 
 0: Rebound, Sub, Jump Ball

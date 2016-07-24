@@ -5,7 +5,36 @@ This information was obtained by inspecting the playbyplay data of the following
 
 It is probably somewhat inaccurate and certainly incomplete, but it helps with having some notion of what the fields mean.
 
-EVENTMSGTYPE
+### Game IDs
+
+Game IDs follow this logic:
+
+GameID = *00Syy0xxxx*
+
+where:
+
+- S is either 2 for regular season or 4 for playoff games
+- yy is the season (e.g. 15 for 2015/2016, 99 for 1999/2000)
+- xxxx is the game number
+
+About the game number:
+
+- for regular season games, this is just the game number. It's a value between 1 and 1230 (in case of a normal 82-game season with 30 teams); in general, it's a value between 1 and G*T/2, where G is games per team and T is total number of teams.
+
+- for playoff games, this is a code of the form 0RMG, where 0 is just a 0, R is the playoff round (normally 1-4, although probably less in past ages), M is the matchup number (varying between *0* and the total number of matchups for that playoff round, for both conferences) and G is the game number within that particular matchup (e.g. 1 for Game 1, 6 for Game 6).
+
+Examples:
+
+GameID=0021500001: regular season, 2015-2016, game #1 (Detroit Pistons 106 - 94 Atlanta Hawks)
+GameID=0021501230: regular season, 2015-2016, game #1230 (Denver Nuggets 99 - 107 Portland Trail Blazers)
+GameID=0021000873: regular season, 2010-2011, game #873 (Dallas Mavericks 105 - 99 Washington Wizards)
+GameID=0041500154: playoffs, 2015-2016, round 1, matchup 5, game 4 (San Antonio Spurs 116 - 95 Memphis Grizzlies)
+GameID=0041200403: playoffs, 2012-2013, round 4, matchup 0, game 3 (Miami Heat 77 - 103 San Antonio Spurs)
+GameID=0029700234: regular season, 1997-1998, game #234 (Toronto Raptors 98 - 115 Utah Jazz)
+GameID=0026300101: regular season, 1963-1964, game #101 (New York Knicks 102 - 116 Baltimore Bullets)
+
+
+### EVENTMSGTYPE
 
 1: Made shots
 
@@ -29,7 +58,7 @@ EVENTMSGTYPE
 
 13: End of quarter  
 
-EVENTMSGACTIONTYPE:
+### EVENTMSGACTIONTYPE:
 
 0: Rebound, Sub, Jump Ball
 

@@ -6,6 +6,48 @@ Tools for the TILES project
 """
 import numpy as np
 
+# generate GameID
+def get_gameID(season,gametype,gamenum):
+    """
+    Generate gameID for stats.nba.com
+
+    Input:
+        season (int): season year in format YYYY
+        gametype (str): either "R" for regular season or "P" for playoff
+        gamenum (int): the game number
+
+    Output:
+        gameID (int): the requested game ID
+
+    Comments:
+        for playoff games, the game number should follow the rules outlined in DOCS.md
+
+    """
+
+    prefix = '00'
+
+
+    se = str(season)[-2:]
+
+    if gametype == "R":
+        gt = str(2)
+    elif gametype == "P":
+        gt = str(4)
+    else:
+        raise ValueError("Unknown game type: {}".format(gametype))
+
+    gn = str(gamenum).zfill(4)
+
+
+    gameID = prefix + gt + se + '0' + gn
+
+    return gameID
+
+# quick tests
+assert get_gameID(season=2015, gametype="R", gamenum=13)=='0021500013'
+assert get_gameID(season=1999, gametype="P", gamenum=101)=='0049900101'
+assert get_gameID(season=2013, gametype="R", gamenum=1230)=='0021301230'
+
 # define PR-score
 def PRscore(y_true, y_pred):
     """
@@ -23,6 +65,7 @@ def PRscore(y_true, y_pred):
         PR-score = 2*P*R/(P+R), where P is precision and R is recall
         PR-score is always between 0 and 1, 0 is worse, 1 is best
     """
+    
     import numpy as np
     from sklearn.metrics import precision_score, recall_score
 
@@ -46,6 +89,8 @@ assert np.isclose(PRscore([1,1,0,1,0,0,1,0,1], [0,1,0,1,1,1,0,0,0]), 4./9.)
 # define event_to_OHE function
 def event_to_OHE(event_code, size):
     """
+    *** PROBABLY DEPRECATED ***
+
     converts event_code to a One-Hot Encoded (OHE) vector of lenght size
     
     Input:
@@ -61,7 +106,7 @@ def event_to_OHE(event_code, size):
     Comments:
         enforces event_code to be smaller than size.
         expecting 0 to be a valid event_code
-        
+
     Examples:
         event_to_OHE(3, 5) = np.array([0,0,0,1,0])
         event_to_OHE(1, 2) = np.array([0,1])

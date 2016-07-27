@@ -255,3 +255,64 @@ def build_cumulative_data(df_events, window_size=10):
     assert len(X) == len(y)    
     
     return X, y
+
+
+
+def print_scores(model, X_train, y_train, X_test, y_test):
+    """
+    Compute scores for given model with training and test sets
+    
+    Input:
+        model (sklearn.linear_model): the model with which to calculate scores
+        X_train (numpy_array): training design matrix X
+        y_train (numpy_array): training labels y
+        X_test (numpy_array): test design matrix X
+        y_test (numpy_array): test labels y
+        
+    Output:
+        F1-score in test set
+    
+    Side Effects:
+        prints the scores
+        
+    Comments:
+        model must be fitted before calling this function
+    
+    """
+    
+    y_train_predicted = model.predict(X_train)
+    y_test_predicted = model.predict(X_test)
+
+    
+    # accuracy scores
+    print("Accuracy")
+    print("Train: ", model.score(X_train,y_train))
+    print("Test: ", model.score(X_test, y_test))
+    print("\n")
+
+    # use precision and recall metrics
+    from sklearn.metrics import precision_score, recall_score
+
+    precision_train = precision_score(y_train, y_train_predicted)
+    recall_train = recall_score(y_train, y_train_predicted)
+
+    precision_test = precision_score(y_test, y_test_predicted)
+    recall_test = recall_score(y_test, y_test_predicted)
+
+    print("Precision and Recall")
+    print ("Train: ", precision_train, recall_train)
+    print ("Test: ", precision_test, recall_test)
+    print("\n")
+
+
+    # F1 score
+    from tilestools import F1score
+    f1_train = F1score(y_train, y_train_predicted)
+    f1_test = F1score(y_test, y_test_predicted)
+
+    print("F1 score")
+    print ("Train: ", f1_train)
+    print ("Test: ", f1_test)
+
+    
+    return f1_test

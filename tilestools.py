@@ -87,44 +87,6 @@ assert np.isclose(F1score([1, 1, 1], [0, 0, 0]), 0.)
 assert np.isclose(F1score([1,1,0,1], [1,0,0,0]), 0.5)
 assert np.isclose(F1score([1,1,0,1,0,0,1,0,1], [0,1,0,1,1,1,0,0,0]), 4./9.)
 
-# define event_to_OHE function
-def event_to_OHE(event_code, size):
-    """
-    *** PROBABLY DEPRECATED ***
-
-    converts event_code to a One-Hot Encoded (OHE) vector of lenght size
-    
-    Input:
-        event_code (int): the event code
-        size (int): the lenght of the final OHE vector
-    
-    Output:
-        event_OHE (ndarray): OHE vector
-    
-    Dependencies:
-        numpy as np
-    
-    Comments:
-        enforces event_code to be smaller than size.
-        expecting 0 to be a valid event_code
-
-    Examples:
-        event_to_OHE(3, 5) = np.array([0,0,0,1,0])
-        event_to_OHE(1, 2) = np.array([0,1])
-    """
-    import numpy as np
-    
-    assert event_code < size
-    
-    vec = np.zeros(size)
-    vec[event_code] = 1.
-    
-    return vec
-
-assert np.array_equal(event_to_OHE(4,5), np.array([0,0,0,0,1]))
-assert np.array_equal(event_to_OHE(1,10), np.array([0,1,0,0,0,0,0,0,0,0]))
-assert np.array_equal(event_to_OHE(0,2), np.array([1,0]))
-
 def build_df_events(df, features):
     """
     Builds a one-hot encoded dataframe from the original dataframe df and a list of relevant features
@@ -209,52 +171,64 @@ def build_cumulative_data(df_events, window_size=10):
         
     Output:
         X (numpy matrix): the design matrix
-        y (numpy array): the labels vector
         
     Comments:
         this is used as the design matrix and corresponding labels in the case of a moving-window approach
         the design matrix created, X, is just a sum over the previous events of whatever features df_events has
-        as a result, len(X) = len(df_events) - window_size, because for the first window_size events no cumulative data is generated
+        X has size equal to df_events. If the number of previous events is smaller than window_size, just uses a smaller window (using all previous events)
     
     """
-    # create design matrix X and labels y
+    # create design matrix X 
 
     # we define a window of size window_size and select every set of window_size points as a training example
-    # the label is whether the index of the next event is a timeout or not
-
-    # this assumes that there wasn't a timeout in the first window_size events
 
     number_of_events, number_of_features = df_events.shape
 
-    num_training_examples = number_of_events - window_size
-
-    X = np.zeros((num_training_examples, number_of_features))
-
-    timeout_events = list(df_events[(df_events.TIMEOUT_HOME==1) | (df_events.TIMEOUT_AWAY==1) ].index)
+    X = np.zeros((number_of_events, number_of_features))
 
     idx=0
-    for event_id in range(window_size, number_of_events):
-        before_events = df_events.iloc[event_id-window_size : event_id]
+    for event_id in range(number_of_events):
+        before_events = df_events.iloc[max(0,event_id-window_size) : event_id]
         X[idx,:] = before_events.sum()
         idx+=1
 
-    # labels
-    # create list of timeout events indexes in new setting
-    # e.g. if window_size=10 and the 11th event was a timeout, then y[0] must be 1
-    timeout_events_idx = [idx-window_size for idx in timeout_events]
-
-    # create labels
-    y = np.zeros(num_training_examples)
-    y[timeout_events_idx] = 1.0
-
 
     # remove last two columns in  X, which are the timeouts
-    X = np.delete(X, np.s_[-2:], axis=1)
-
-    # sanity check
-    assert len(X) == len(y)    
+    X = np.delete(X, np.s_[-2:], axis=1)  
     
-    return X, y
+    return X
+
+def forward_window_labels(df_events, window_size=20):
+    """
+    Create a label vector with a forward window
+    
+    Input:
+        df_events (pandas dataframe): a dataframe where every row is an event
+        window_size (int): the size of the moving window
+        
+    Output:
+        y (numpy array): the labels vector
+    
+    Comments:
+        uses column TIMEOUT_HOME in df_events as input for the labels
+        the label is whether the index of the next event is a timeout or not
+
+    """
+
+    number_of_events, number_of_features = df_events.shape
+
+    timeout_events = list(df_events[df_events.TIMEOUT_HOME==1].index)
+
+    windowed_timeouts = [k for event in timeout_events for k in range(event-window_size, event, 1)]
+
+    # clean negative indices
+    windowed_timeouts = [k for k in windowed_timeouts if k>=0]
+
+    # create labels
+    y = np.zeros(number_of_events)
+    y[windowed_timeouts] = 1.0
+
+    return y
 
 
 
